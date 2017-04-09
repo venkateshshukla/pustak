@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -70,7 +71,7 @@ public class DbConnection {
      * @throws SQLException In case of any errors while execution.
      */
     public void executeSql(String sql) throws SQLException {
-        executeSql(sql, true);
+        executeSql(sql, true, AppConstants.DEFAULT_FETCH_SIZE, ResultSet.FETCH_FORWARD);
     }
 
     /**
@@ -79,22 +80,26 @@ public class DbConnection {
      *
      * @param sql       Given SQL statement.
      * @param doCommit  Should the changes be committed?
+     * @param fetchSize The number of records to be fetched in one go. Less is good on memory but slow.
+     * @param fetchDirn The direction to be used while fetching.
      * @throws SQLException In case of any errors while execution.
      */
-    public void executeSql(String sql, boolean doCommit) throws SQLException {
+    public void executeSql(String sql, boolean doCommit, int fetchSize, int fetchDirn) throws SQLException {
         if (connection == null) {
             LOGGER.error("DB: Uninitialized DB Connection.");
             throw new AppException("Uninitialized DB Connection.");
         }
 
         if (sql == null || sql.trim().isEmpty()) {
-            LOGGER.warn("DB : Cannot execute null or empty SQL.");
+            LOGGER.error("DB : Cannot execute null or empty SQL.");
             throw new IllegalArgumentException("Null or empty SQL.");
         }
 
         LOGGER.info("DB : Executing the SQL : {}", sql);
 
         Statement stmt = connection.createStatement();
+        stmt.setFetchDirection(fetchDirn);
+        stmt.setFetchSize(fetchSize);
         stmt.executeUpdate(sql);
         stmt.close();
 

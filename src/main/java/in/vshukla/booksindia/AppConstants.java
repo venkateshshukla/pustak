@@ -11,4 +11,6 @@ public interface AppConstants {
     String PROP_USER = "USER";
 
     String DEFAULT_DB_URL = "jdbc:postgresql://localhost/%s";
+
+    int DEFAULT_FETCH_SIZE = 128;
 }
