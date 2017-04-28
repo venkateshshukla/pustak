@@ -9,6 +9,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static in.vshukla.booksindia.AppUtils.blankStringCheck;
 
@@ -22,12 +23,36 @@ public class DbConnection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DbConnection.class);
 
+    private static final Object lock = new Object();
+
     private Connection connection;
+
+    private final AtomicBoolean isInitialized = new AtomicBoolean(Boolean.FALSE);
 
     /**
      * Made private for Singleton pattern.
      */
     private DbConnection() {
+    }
+
+    /**
+     * Holder Class holds the singleton DbConnection object.
+     */
+    private static class DbConnectionHolder {
+        private static final DbConnection INSTANCE = new DbConnection();
+    }
+
+    /**
+     * Get the Database Connection instance.
+     * @return Singleton DB instance.
+     */
+    public static DbConnection getInstance() {
+        if (!DbConnectionHolder.INSTANCE.isInitialized.get()) {
+            synchronized (lock) {
+                DbConnectionHolder.INSTANCE.initialize();
+            }
+        }
+        return DbConnectionHolder.INSTANCE;
     }
 
     /**
@@ -44,6 +69,7 @@ public class DbConnection {
 
         DbCred cred = getDbCred();
         this.connection = getConnection(cred);
+        this.isInitialized.set(Boolean.TRUE);
     }
 
     /**
@@ -84,21 +110,6 @@ public class DbConnection {
     }
 
     /**
-     * Holder Class holds the singleton DbConnection object.
-     */
-    private static class DbConnectionHolder {
-        private static final DbConnection INSTANCE = new DbConnection();
-    }
-
-    /**
-     * Get the Database Connection instance.
-     * @return Singleton DB instance.
-     */
-    public static DbConnection getInstance() {
-        return DbConnectionHolder.INSTANCE;
-    }
-
-    /**
      * Execute the given SQL statement and commit.
      * @param sql   The SQL to execute.
      * @throws SQLException In case of any errors while execution.
@@ -116,6 +127,7 @@ public class DbConnection {
     public void executeSql(String sql, boolean doCommit) throws SQLException {
         executeSql(sql, doCommit, AppConstants.DEFAULT_FETCH_SIZE, ResultSet.FETCH_FORWARD);
     }
+
     /**
      * Utilizing the open DB Connection, execute the given SQL.
      * If needed, execute a commit.
