@@ -79,4 +79,17 @@ public class AppUtils {
         }
     }
 
+    /**
+     * Perform basic cleaning operations. In case of null, returns an empty string.
+     * For non-null inputs, it returns trimmed value.
+     *
+     * @param value Value to be cleaned
+     * @return  Cleaned value. Empty string in case of null. Trimmed otherwise.
+     */
+    public static String cleanValue(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim();
+    }
 }

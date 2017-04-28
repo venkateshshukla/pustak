@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static in.vshukla.booksindia.AppUtils.blankStringCheck;
 
@@ -161,18 +162,66 @@ public class DbConnection {
 
     /**
      * Process the ResultSet obtained by executing the given SQL.
+     * Do this for all the results in the ResultSet
      *
      * @param sql   SELECT statement to get the results.
      * @param resultSetConsumer Would be called for every result.
      * @throws SQLException
      */
     public void processResult(String sql, Consumer<ResultSet> resultSetConsumer) throws SQLException {
+        processResult(sql, resultSetConsumer, (x) -> true, AppConstants.DEFAULT_FETCH_SIZE, ResultSet.FETCH_FORWARD);
+    }
+
+    /**
+     * Process the ResultSet obtained by executing the given SQL.
+     * Do this for only a limited number of results.
+     *
+     * @param sql   SELECT statement to get the results.
+     * @param resultSetConsumer Would be called for every result.
+     * @param maxCount Maximum number of rows to process.
+     * @throws SQLException
+     */
+    public void processResult(String sql, Consumer<ResultSet> resultSetConsumer, final int maxCount) throws SQLException {
+        processResult(sql, resultSetConsumer, (x) -> x < maxCount, AppConstants.DEFAULT_FETCH_SIZE, ResultSet.FETCH_FORWARD);
+    }
+
+    /**
+     * Process the ResultSet obtained by executing the given SQL.
+     * Do this for all the results in the ResultSet
+     *
+     * @param sql   SELECT statement to get the results.
+     * @param resultSetConsumer Would be called for every result.
+     * @param maxCount Maximum number of rows to process.
+     * @param fetchSize Number of rows to be fetched in one batch. Lesser improves memory footprint at cost of speed.
+     * @param fetchDirn Direction for fetching data.
+     * @throws SQLException
+     */
+    private void processResult(String sql, Consumer<ResultSet> resultSetConsumer, final int maxCount, final int fetchSize, final int fetchDirn) throws SQLException {
+        processResult(sql, resultSetConsumer, (x) -> x < maxCount, fetchSize, fetchDirn);
+    }
+
+    /**
+     * Process the ResultSet obtained by executing the given SQL.
+     *
+     * @param sql   SELECT statement to get the results.
+     * @param resultSetConsumer Would be called for every result.
+     * @param selector Predicate deciding which entries to pick up.
+     * @param fetchSize Number of rows to be fetched in one batch. Lesser improves memory footprint at cost of speed.
+     * @param fetchDirn Direction for fetching data.
+     * @throws SQLException
+     */
+    private void processResult(String sql, Consumer<ResultSet> resultSetConsumer, Predicate<Integer> selector, final int fetchSize, final int fetchDirn) throws SQLException {
         connectionCheck();
         blankStringCheck(sql, "DB : Cannot execute blank SQL.");
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setFetchSize(fetchSize);
+            stmt.setFetchDirection(fetchDirn);
             ResultSet results = stmt.executeQuery();
-            while (results.next()) {
+
+            int count = 0;
+            while (results.next() && selector.test(count)) {
                 resultSetConsumer.accept(results);
+                count++;
             }
         }
     }

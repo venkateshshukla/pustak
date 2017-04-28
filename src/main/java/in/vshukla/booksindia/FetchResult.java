@@ -17,7 +17,7 @@ public class FetchResult {
     public static void main(String[] args) {
         DbConnection dbConnection = DbConnection.getInstance();
         try {
-            dbConnection.processResult("SELECT * FROM BOOK", FetchResult::printDataClean);
+            dbConnection.processResult("SELECT * FROM BOOK", FetchResult::printDataClean, 10);
         } catch (SQLException e) {
             LOGGER.error("Caught SQL Exception", e);
         }
@@ -35,7 +35,8 @@ public class FetchResult {
             ResultSetMetaData metaData = resultSet.getMetaData();
             System.out.print("BOOK {");
             for (int i = 1; i <= metaData.getColumnCount(); i++) {
-               System.out.print(String.format(" \"%s\" : \"%s\",", metaData.getColumnName(i), resultSet.getString(i)));
+               System.out.print(String.format(" \"%s\" : \"%s\",", metaData.getColumnName(i),
+                       AppUtils.cleanValue(resultSet.getString(i))));
             }
             System.out.println(" };");
     }
