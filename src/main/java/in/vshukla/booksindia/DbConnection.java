@@ -6,10 +6,12 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import static in.vshukla.booksindia.AppUtils.blankStringCheck;
 
@@ -154,6 +156,24 @@ public class DbConnection {
         if (doCommit) {
             LOGGER.info("DB : Committing the changes.");
             connection.commit();
+        }
+    }
+
+    /**
+     * Process the ResultSet obtained by executing the given SQL.
+     *
+     * @param sql   SELECT statement to get the results.
+     * @param resultSetConsumer Would be called for every result.
+     * @throws SQLException
+     */
+    public void processResult(String sql, Consumer<ResultSet> resultSetConsumer) throws SQLException {
+        connectionCheck();
+        blankStringCheck(sql, "DB : Cannot execute blank SQL.");
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet results = stmt.executeQuery();
+            while (results.next()) {
+                resultSetConsumer.accept(results);
+            }
         }
     }
 
