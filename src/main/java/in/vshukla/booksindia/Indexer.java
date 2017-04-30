@@ -27,6 +27,7 @@ public class Indexer {
 
     public void initialize () throws IOException {
         String idxDirStr = AppUtils.getProperty(AppConstants.PROP_IDX_LOC, () -> AppConstants.DEFAULT_IDX_LOC);
+        initialize(idxDirStr);
     }
 
     public void initialize (String idxDirStr) throws IOException {
