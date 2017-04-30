@@ -19,4 +19,8 @@ public interface AppConstants {
 
     int DEFAULT_FETCH_SIZE = 128;
     int DEFAULT_FETCH_DIRN = ResultSet.FETCH_FORWARD;
+
+    String PROP_PS2 = "PS2";
+    String DEFAULT_PS2 = ">> ";
+
 }
