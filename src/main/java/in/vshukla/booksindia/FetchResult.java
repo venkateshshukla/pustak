@@ -23,7 +23,7 @@ public class FetchResult {
         DbConnection dbConnection = DbConnection.getInstance();
         try {
             indexer.initialize();
-            dbConnection.processResult("SELECT * FROM BOOK", FetchResult::indexDataSafe);
+            dbConnection.processLargeResultSet("SELECT * FROM BOOK", FetchResult::indexDataSafe);
         } catch (SQLException e) {
             LOGGER.error("Caught SQL Exception", e);
         } catch (IOException e) {

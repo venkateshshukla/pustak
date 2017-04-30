@@ -205,7 +205,7 @@ public class DbConnection {
      *
      * @param sql   SELECT statement to get the results.
      * @param resultSetConsumer Would be called for every result.
-     * @param selector Predicate deciding which entries to pick up.
+     * @param selector Predicate deciding which entries to pick up. This is used in the iteration loop. So, first false would break it.
      * @param fetchSize Number of rows to be fetched in one batch. Lesser improves memory footprint at cost of speed.
      * @param fetchDirn Direction for fetching data.
      * @throws SQLException
@@ -222,6 +222,27 @@ public class DbConnection {
             while (results.next() && selector.test(count)) {
                 resultSetConsumer.accept(results);
                 count++;
+            }
+        }
+    }
+
+        /**
+     * Process the ResultSet obtained by executing the given SQL.
+     *
+     * @param sql   SELECT statement to get the results.
+     * @param resultSetConsumer Would be called for every result.
+     * @throws SQLException
+     */
+    public void processLargeResultSet(String sql, Consumer<ResultSet> resultSetConsumer) throws SQLException {
+        connectionCheck();
+        blankStringCheck(sql, "DB : Cannot execute blank SQL.");
+        try (PreparedStatement stmt = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+            stmt.setFetchSize(AppConstants.DEFAULT_FETCH_SIZE);
+            stmt.setFetchDirection(AppConstants.DEFAULT_FETCH_DIRN);
+            ResultSet results = stmt.executeQuery();
+
+            while (results.next()) {
+                resultSetConsumer.accept(results);
             }
         }
     }
