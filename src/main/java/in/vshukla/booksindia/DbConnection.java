@@ -226,8 +226,9 @@ public class DbConnection {
         }
     }
 
-        /**
-     * Process the ResultSet obtained by executing the given SQL.
+    /**
+     * Process the ResultSet obtained by executing the given SQL
+     * Some optimizations are made to deal with large datasets to the order of millions.
      *
      * @param sql   SELECT statement to get the results.
      * @param resultSetConsumer Would be called for every result.
