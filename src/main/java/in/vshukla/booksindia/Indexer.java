@@ -25,6 +25,10 @@ public class Indexer {
 
     private IndexWriter indexWriter;
 
+    public void initialize () throws IOException {
+        String idxDirStr = AppUtils.getProperty(AppConstants.PROP_IDX_LOC, () -> AppConstants.DEFAULT_IDX_LOC);
+    }
+
     public void initialize (String idxDirStr) throws IOException {
         AppUtils.blankStringCheck(idxDirStr, "Index : Cannot work with a blank directory.");
         if (!AppUtils.directoryExists(idxDirStr)) {

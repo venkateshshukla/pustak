@@ -118,7 +118,7 @@ public class DbConnection {
      * @throws SQLException In case of any errors while execution.
      */
     public void executeSql(String sql) throws SQLException {
-        executeSql(sql, true, AppConstants.DEFAULT_FETCH_SIZE, ResultSet.FETCH_FORWARD);
+        executeSql(sql, true, AppConstants.DEFAULT_FETCH_SIZE, AppConstants.DEFAULT_FETCH_DIRN);
     }
 
     /**
@@ -128,7 +128,7 @@ public class DbConnection {
      * @throws SQLException
      */
     public void executeSql(String sql, boolean doCommit) throws SQLException {
-        executeSql(sql, doCommit, AppConstants.DEFAULT_FETCH_SIZE, ResultSet.FETCH_FORWARD);
+        executeSql(sql, doCommit, AppConstants.DEFAULT_FETCH_SIZE, AppConstants.DEFAULT_FETCH_DIRN);
     }
 
     /**

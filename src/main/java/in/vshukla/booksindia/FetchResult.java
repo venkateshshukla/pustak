@@ -17,18 +17,17 @@ public class FetchResult {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FetchResult.class);
 
-    private static final String IDX_DIR = "/tmp/booksindia";
     private static final Indexer indexer = new Indexer();
 
     public static void main(String[] args) {
         DbConnection dbConnection = DbConnection.getInstance();
         try {
-            indexer.initialize(IDX_DIR);
+            indexer.initialize();
             dbConnection.processResult("SELECT * FROM BOOK", FetchResult::indexDataSafe);
         } catch (SQLException e) {
             LOGGER.error("Caught SQL Exception", e);
         } catch (IOException e) {
-            LOGGER.error("IO Exception while initializiing index.");
+            LOGGER.error("IO Exception while initializiing index.", e);
         }
     }
 
@@ -59,6 +58,7 @@ public class FetchResult {
             LOGGER.error("IO Error while indexing.", e);
         }
     }
+
 
     private static void indexData(final ResultSet resultSet) throws SQLException, IOException {
         ResultSetMetaData metaData =  resultSet.getMetaData();
