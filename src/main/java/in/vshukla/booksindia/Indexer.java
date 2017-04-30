@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * Created by venkatesh on 29/4/17.
  */
-public class Indexer {
+public class Indexer implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Indexer.class);
 
@@ -28,6 +28,12 @@ public class Indexer {
     public void initialize () throws IOException {
         String idxDirStr = AppUtils.getProperty(AppConstants.PROP_IDX_LOC, () -> AppConstants.DEFAULT_IDX_LOC);
         initialize(idxDirStr);
+    }
+
+    @Override
+    public void close () throws IOException {
+        assert indexWriter != null : "Index : Not initialized.";
+        indexWriter.close();
     }
 
     public void initialize (String idxDirStr) throws IOException {
