@@ -1,8 +1,15 @@
 package in.vshukla.booksindia;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -58,6 +65,14 @@ public class AppUtils {
     /**
      * Check for blankness of a String. Throw an {@link IllegalArgumentException} if it is.
      * @param str   String to be checked for blankness.
+     */
+    public static void blankStringCheck (String str) {
+        blankStringCheck(str, "Encountered blank string.");
+    }
+
+    /**
+     * Check for blankness of a String. Throw an {@link IllegalArgumentException} if it is.
+     * @param str   String to be checked for blankness.
      * @param msg   Error msg.
      */
     public static void blankStringCheck (String str, String msg) {
@@ -92,4 +107,68 @@ public class AppUtils {
         }
         return value.trim();
     }
+
+    /**
+     * Check if a directory of the given name is present.
+     * Also checks if the file of the given name is a directory or not.
+     *
+     * @param dirStr Name of the directory to be checked for existence.
+     * @return Answer to the question, does a directory with given name exist?
+     */
+    public static boolean directoryExists(String dirStr) {
+        blankStringCheck(dirStr, "Cannot check for a blank directory name.");
+        return isPresent(dirStr, (p) -> Files.isDirectory(p));
+    }
+
+    /**
+     * Check if a regular file of the given name is present.
+     * Also checks if the file of the given name is a regular file or not.
+     *
+     * @param fileStr Name of the file to be checked for existence.
+     * @return Answer to the question, does a regular file with given name exist?
+     */
+    public static boolean fileExists(String fileStr) {
+        blankStringCheck(fileStr, "Cannot check for a blank file name.");
+        return isPresent(fileStr, (p) -> Files.isRegularFile(p));
+    }
+
+    /**
+     * Check if a file of the given name is present.
+     * File here refers to normal files, directories, symbolic links and other such stuff.
+     *
+     * @param fileStr Name of the file to be checked for existence.
+     * @return Answer to the question, does this file exist?
+     */
+    public static boolean isPresent(String fileStr) {
+        return isPresent(fileStr, (p) -> true);
+    }
+
+    /**
+     * Check if a file of the given name is present.
+     * A criteria can also be passed which would be evaluated in case of presence of the file.
+     * File here refers to normal files, directories, symbolic links and other such stuff.
+     *
+     * @param fileStr   Name of the file to be checked for existence.
+     * @param criteria  A criteria that can be evaluated on the {@link Path} corresponding to given file.
+     * @return Answer to the question, does this file exists and does it satisfy the given criteria?
+     */
+    private static boolean isPresent(String fileStr, Predicate<Path> criteria) {
+        blankStringCheck(fileStr, "Cannot check for a blank file name.");
+        Path filePath = Paths.get(fileStr);
+        return Files.exists(filePath) && criteria.test(filePath);
+    }
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    /**
+     * Convert an Object to a {@code Map<String, String>} where K is the field name and V is the value.
+     *
+     * @param object    Source object
+     * @return          Map representation of the object
+     */
+    public static Map<String, String> getMapFromObject(Object object) {
+        assert object != null : "Cannot map a null object";
+        return MAPPER.convertValue(object, new TypeReference<Map<String, String>>() {});
+    }
+
 }
